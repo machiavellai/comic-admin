@@ -1,0 +1,199 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+    --primary: 0 0% 0%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 20%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 20%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 0 0% 0%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 0 0% 10%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 10%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 65%;
+    --accent: 0 0% 15%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 0 0% 98%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  .comic-heading {
+    @apply font-bangers tracking-wide;
+  }
+}
+
+@layer components {
+  .comic-panel {
+    @apply border-2 border-black bg-card rounded-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)];
+  }
+
+  .dark .comic-panel {
+    @apply border-white shadow-[4px_4px_0px_0px_rgba(255,255,255,0.8)];
+  }
+
+  .comic-button {
+    @apply font-bangers tracking-wide uppercase transform transition-transform active:scale-95 hover:-translate-y-0.5;
+  }
+
+  .speech-bubble {
+    @apply relative bg-white text-black p-4 rounded-lg border-2 border-black;
+  }
+
+  .speech-bubble:after {
+    content: "";
+    @apply absolute w-4 h-4 bg-white border-r-2 border-b-2 border-black rotate-45 -bottom-2 left-6;
+  }
+
+  /* Comic Toast Styling */
+  .comic-toast {
+    @apply border-2 border-black bg-white text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)];
+    animation: toastBounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .comic-toast[data-state="open"] {
+    animation: toastBounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .comic-toast[data-state="closed"] {
+    animation: toastFadeOut 0.3s ease-in-out;
+  }
+
+  .comic-toast[data-swipe="move"] {
+    transform: translateX(var(--radix-toast-swipe-move-x));
+  }
+
+  .comic-toast[data-swipe="cancel"] {
+    transform: translateX(0);
+    transition: transform 200ms ease-out;
+  }
+
+  .comic-toast[data-swipe="end"] {
+    animation: toastSwipeOut 100ms ease-out;
+  }
+
+  @keyframes toastBounce {
+    0% {
+      transform: scale(0.8) translateY(10px);
+      opacity: 0;
+    }
+    80% {
+      transform: scale(1.05);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes toastFadeOut {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes toastSwipeOut {
+    from {
+      transform: translateX(var(--radix-toast-swipe-end-x));
+    }
+    to {
+      transform: translateX(calc(100% + 16px));
+    }
+  }
+
+  /* Loading animation styles */
+  .loading-container {
+    @apply relative;
+  }
+
+  .logo-animation {
+    opacity: 0;
+    transform: scale(0.5);
+    transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s ease;
+  }
+
+  .logo-animation.visible {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .logo-animation.pulse {
+    animation: logoPulse 2s infinite alternate;
+  }
+
+  .logo-glow {
+    @apply absolute inset-0 rounded-full bg-blue-500 blur-xl opacity-0;
+    z-index: -1;
+    transition: opacity 0.5s ease, transform 1s ease;
+    transform: scale(0.8);
+  }
+
+  .logo-glow.active {
+    opacity: 0.6;
+    transform: scale(1.2);
+    animation: glowPulse 2s infinite alternate;
+  }
+
+  @keyframes logoPulse {
+    0% {
+      transform: scale(1);
+      filter: drop-shadow(0 0 5px rgba(59, 130, 246, 0.5));
+    }
+    100% {
+      transform: scale(1.05);
+      filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.8));
+    }
+  }
+
+  @keyframes glowPulse {
+    0% {
+      opacity: 0.3;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 0.6;
+      transform: scale(1.3);
+    }
+  }
+}
