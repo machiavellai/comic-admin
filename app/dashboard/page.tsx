@@ -1,11 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Plus, Edit, Calendar, BookOpen, Layers } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { useAuth } from "@/components/auth-provider"
+import { useRouter } from "next/navigation"
 
 // Mock data for comics
 const mockComics = [
@@ -54,6 +56,23 @@ const mockComics = [
 export default function Dashboard() {
   const [comics, setComics] = useState(mockComics)
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+
+  // const { user, role, isLoading } = useAuth();
+  // const router = useRouter();
+
+  // useEffect(() => {
+  //   if (!isLoading && (!user || role !== 'admin')) {
+  //     router.push('/login');
+  //   }
+  // }, [user, role, isLoading, router]);
+
+  // if (isLoading) {
+  //   return <div>Loading...</div>;
+  // }
+
+  // if (!user || role !== 'admin') {
+  //   return null;
+  // }
 
   return (
     <div className="space-y-6">

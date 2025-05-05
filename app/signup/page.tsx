@@ -47,29 +47,22 @@ export default function SignupPage() {
   };
 
   const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError(null)
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
 
     // Basic validation
     if (!formData.name.trim()) {
-      setError("Name is required")
-      setIsLoading(false)
-      return
+      setError('Name is required');
+      setIsLoading(false);
+      return;
     }
 
-    if (!formData.email.trim() || !formData.email.includes("@")) {
-      setError("Please enter a valid email address")
-      setIsLoading(false)
-      return
+    if (!formData.email.trim() || !formData.email.includes('@')) {
+      setError('Please enter a valid email address');
+      setIsLoading(false);
+      return;
     }
-
-    if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters")
-      setIsLoading(false)
-      return
-    }
-
 
     try {
       // Sign up the user without a password (Supabase requires a temporary one)
@@ -77,7 +70,7 @@ export default function SignupPage() {
         email: formData.email,
         password: Math.random().toString(36).slice(-8), // Temporary password (not used)
         options: {
-          emailRedirectTo: 'http://localhost:3000/login',
+          emailRedirectTo: 'http://localhost:3000/dashboard', // Redirect to dashboard after magic link
           data: {
             name: formData.name,
             role: formData.email.includes('admin') ? 'admin' : 'user',
@@ -92,7 +85,7 @@ export default function SignupPage() {
       const { error: otpError } = await supabase.auth.signInWithOtp({
         email: formData.email,
         options: {
-          emailRedirectTo: 'http://localhost:3000/login',
+          emailRedirectTo: 'http://localhost:3000/dashboard', // Redirect to dashboard
         },
       });
 
@@ -104,7 +97,7 @@ export default function SignupPage() {
         duration: 5000,
       });
 
-      // Redirect to login page
+      // Redirect to login page (temporary, user will use magic link to go to dashboard)
       router.push('/login');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to sign up';
@@ -117,11 +110,6 @@ export default function SignupPage() {
       });
       setIsLoading(false);
     }
-
-
-    // Redirect to loading screen
-    //   router.push("/loading-screen")
-    // }, 1000)
   }
 
   return (

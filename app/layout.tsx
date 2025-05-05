@@ -4,6 +4,7 @@ import { Inter, Bangers } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ComicToast } from "@/components/ui/comic-toast"
+import { AuthProvider } from "@/components/auth-provider"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
 const bangers = Bangers({ weight: "400", subsets: ["latin"], variable: "--font-bangers" })
@@ -11,7 +12,7 @@ const bangers = Bangers({ weight: "400", subsets: ["latin"], variable: "--font-b
 export const metadata: Metadata = {
   title: "Comic Book Admin Portal",
   description: "Admin portal for managing comic book uploads",
-    generator: 'v0.dev'
+  generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -23,7 +24,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} ${bangers.variable} font-sans`}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          {children}
+          <AuthProvider>
+            {children}
+          </AuthProvider>
           <ComicToast />
         </ThemeProvider>
       </body>
