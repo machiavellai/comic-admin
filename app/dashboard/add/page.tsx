@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -20,7 +20,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { supabase } from "@/lib/supabase"
 import { IssueFormData, issueSchema } from "@/schema/issueSchema"
 
-export default function AddComicPage() {
+function AddComicContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const parentId = searchParams.get('parent_id');
@@ -411,5 +411,14 @@ export default function AddComicPage() {
         )}
       </Card>
     </div>
+  )
+}
+
+
+export default function AddComicPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <AddComicContent />
+    </Suspense>
   )
 }
