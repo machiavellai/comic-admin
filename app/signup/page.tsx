@@ -25,41 +25,31 @@ export default function SignupPage() {
   const { toast } = useToast()
 
   // // Check Supabase connection on mount
-  // useEffect(() => {
-  //   const checkConnection = async () => {
-  //     try {
-  //       const { error } = await supabase.auth.getSession();
-  //       if (error) throw error;
-  //       setConnectionStatus('Supabase connected successfully');
-  //     } catch (err) {
-  //       const errorMessage = err instanceof Error ? err.message : 'Failed to connect to Supabase';
-  //       setConnectionStatus(errorMessage);
-  //       setError(errorMessage);
-  //     }
-  //   };
-  //   checkConnection();
-  // }, []);
-
-  // const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const { name, value } = e.target;
-  //   setFormData((prev) => ({ ...prev, [name]: value }));
-  //   setError(null);
-  // };
-
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
 
     try {
+      // Validate inputs
+      if (!formData.name.trim()) {
+        throw new Error('Name is required');
+      }
+      if (!formData.email.trim() || !formData.email.includes('@')) {
+        throw new Error('Please enter a valid email address');
+      }
+
+      // Sign up the user with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
-        password: Math.random().toString(36).slice(-8), // Temporary password
+        password: Math.random().toString(36).slice(-8), // Temporary password (required by Supabase)
         options: {
-          emailRedirectTo: 'http://localhost:3000/dashboard', // Placeholder for now
+          emailRedirectTo: process.env.NEXT_PUBLIC_APP_URL
+            ? `${process.env.NEXT_PUBLIC_APP_URL}/login`
+            : `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`, // Use env variable for deployed URL
           data: {
             name: formData.name,
-            role: formData.email.includes('admin') ? 'admin' : 'user',
+            role: 'admin', // Default to 'user'; admins can be assigned manually
             subscribed: false,
           },
         },
@@ -68,23 +58,24 @@ export default function SignupPage() {
       if (authError) throw authError;
       if (!authData.user) throw new Error('No user returned from signup');
 
-      // Manually insert user into the users table
-      const { error: insertError } = await supabase
-        .from('users')
-        .insert({
-          id: authData.user.id,
-          name: formData.name,
-          email: formData.email,
-          role: formData.email.includes('admin') ? 'admin' : 'user',
-          subscribed: false,
-        });
+      // Insert user into the users table
+      const { error: insertError } = await supabase.from('users').insert({
+        id: authData.user.id,
+        name: formData.name,
+        email: formData.email,
+        role: 'admin', // Default to 'user'
+        subscribed: false,
+      });
 
       if (insertError) throw insertError;
 
+      // Send magic link for email verification
       const { error: otpError } = await supabase.auth.signInWithOtp({
         email: formData.email,
         options: {
-          emailRedirectTo: 'http://localhost:3000/dashboard', // Placeholder for now
+          emailRedirectTo: process.env.NEXT_PUBLIC_APP_URL
+            ? `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
+            : 'http://localhost:3000/dashboard',
         },
       });
 
@@ -92,7 +83,7 @@ export default function SignupPage() {
 
       toast({
         title: 'SIGNUP SUCCESSFUL!',
-        description: `Welcome to Kingdom Comics, ${formData.name}! Check your email for a magic link to log in (note: redirect won't work until deployed).`,
+        description: `Welcome to Kingdom Comics, ${formData.name}! Check your email for a magic link to log in.`,
         duration: 5000,
       });
 
@@ -106,74 +97,10 @@ export default function SignupPage() {
         variant: 'destructive',
         duration: 5000,
       });
-      setIsLoading(false);
     } finally {
       setIsLoading(false);
     }
-    // e.preventDefault();
-    // setIsLoading(true);
-    // setError(null);
-
-    // // Basic validation
-    // if (!formData.name.trim()) {
-    //   setError('Name is required');
-    //   setIsLoading(false);
-    //   return;
-    // }
-
-    // if (!formData.email.trim() || !formData.email.includes('@')) {
-    //   setError('Please enter a valid email address');
-    //   setIsLoading(false);
-    //   return;
-    // }
-
-    // try {
-    //   // Sign up the user without a password (Supabase requires a temporary one)
-    //   const { data: authData, error } = await supabase.auth.signUp({
-    //     email: formData.email,
-    //     password: Math.random().toString(36).slice(-8), // Temporary password (not used)
-    //     options: {
-    //       emailRedirectTo: 'http://localhost:3000/dashboard', // Redirect to dashboard after magic link
-    //       data: {
-    //         name: formData.name,
-    //         role: formData.email.includes('admin') ? 'admin' : 'user',
-    //         subscribed: false,
-    //       },
-    //     },
-    //   });
-
-    //   if (error) throw error;
-
-    //   // Send a magic link for passwordless login
-    //   const { error: otpError } = await supabase.auth.signInWithOtp({
-    //     email: formData.email,
-    //     options: {
-    //       emailRedirectTo: 'http://localhost:3000/dashboard', // Redirect to dashboard
-    //     },
-    //   });
-
-    //   if (otpError) throw otpError;
-
-    //   toast({
-    //     title: 'SIGNUP SUCCESSFUL!',
-    //     description: `Welcome to Kingdom Comics, ${formData.name}! Check your email for a magic link to log in.`,
-    //     duration: 5000,
-    //   });
-
-    //   // Redirect to login page (temporary, user will use magic link to go to dashboard)
-    //   router.push('/login');
-    // } catch (err) {
-    //   const errorMessage = err instanceof Error ? err.message : 'Failed to sign up';
-    //   setError(errorMessage);
-    //   toast({
-    //     title: 'SIGNUP ERROR',
-    //     description: errorMessage,
-    //     variant: 'destructive',
-    //     duration: 5000,
-    //   });
-    //   setIsLoading(false);
-    // }
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[url('/comic-bg-light.svg')] bg-cover p-4">

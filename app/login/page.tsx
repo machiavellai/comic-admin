@@ -37,7 +37,7 @@ export default function LoginPage() {
     },
   });
 
-  // Check initial session state
+  // Check initial session state and handle magic link redirect
   useEffect(() => {
     const fetchSession = async () => {
       const { data, error } = await supabase.auth.getSession();
@@ -48,17 +48,36 @@ export default function LoginPage() {
       }
       setSession(data.session);
       setIsLoadingSession(false);
+
+      // If user is logged in, redirect to dashboard
+      if (data.session) {
+        router.push('/dashboard');
+      }
     };
 
     fetchSession();
-  }, []);
+
+    // Listen for auth state changes (e.g., after magic link click)
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, newSession) => {
+      setSession(newSession);
+      if (event === 'SIGNED_IN') {
+        router.push('/dashboard');
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [router]);
 
   const onSubmit = async (data: LoginFormData) => {
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email: data.email,
         options: {
-          emailRedirectTo: 'http://localhost:3000/dashboard', // Redirect to dashboard
+          emailRedirectTo: process.env.NEXT_PUBLIC_APP_URL
+            ? `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
+            : 'http://localhost:3000/dashboard',
         },
       });
 
@@ -98,7 +117,9 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: 'http://localhost:3000/dashboard', // Redirect to dashboard
+          emailRedirectTo: process.env.NEXT_PUBLIC_APP_URL
+            ? `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
+            : 'http://localhost:3000/dashboard',
         },
       });
 
