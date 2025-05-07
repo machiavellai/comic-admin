@@ -282,11 +282,11 @@ export default function Dashboard() {
                                 </span>
                               </div>
                               <div className="flex gap-2">
-                                <Link href={`/dashboard/edit/${issue.id}`}>
+                                {/* <Link href={`/dashboard/edit/${issue.id}`}>
                                   <Button size="sm" variant="outline" className="comic-button">
                                     Edit
                                   </Button>
-                                </Link>
+                                </Link> */}
                                 {user?.role === 'admin' && (
                                   <Button
                                     size="sm"
@@ -395,11 +395,11 @@ export default function Dashboard() {
                                 </span>
                               </div>
                               <div className="flex gap-2">
-                                <Link href={`/dashboard/edit/${issue.id}`}>
+                                {/* <Link href={`/dashboard/edit/${issue.id}`}>
                                   <Button size="sm" variant="outline" className="comic-button">
                                     Edit
                                   </Button>
-                                </Link>
+                                </Link> */}
                                 {user?.role === 'admin' && (
                                   <Button
                                     size="sm"
