@@ -5,18 +5,22 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { LogOut, User } from "lucide-react"
 import Image from "next/image"
+import { supabase } from "@/lib/supabase"
+import { useStore } from "@/utils/store"
 
 export function Navbar() {
   const router = useRouter()
-  const userName = localStorage.getItem("userName") || null
-  const userEmail = localStorage.getItem("userEmail") || "Admin"
+  const { user } = useStore();
 
-  const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn")
-    localStorage.removeItem("userEmail")
-    localStorage.removeItem("userName")
-    router.push("/login")
-  }
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/login');
+  };
+
+  const displayName = user?.name || user?.email || 'Admin';
+
+
 
   return (
     <header className="border-b border-border">
@@ -29,7 +33,7 @@ export function Navbar() {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <User className="h-4 w-4" />
-            <span>{userName ? userName : userEmail}</span>
+            <span>{displayName}</span>
           </div>
           <Button onClick={handleLogout} variant="ghost" className="comic-button gap-2">
             <LogOut className="h-5 w-5" />
