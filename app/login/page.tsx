@@ -24,25 +24,24 @@ export default function LoginPage() {
   const [isLoadingSession, setIsLoadingSession] = useState(true);
   const router = useRouter();
   const { toast } = useToast();
-
   const {
     control,
     handleSubmit,
+    register,
     formState: { errors, isSubmitting },
-    getValues,
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: '',
+      email: "",
+      password: "", // Added password field
     },
   });
-
-  // Check initial session state and handle magic link redirect
+  // Check initial session state
   useEffect(() => {
     const fetchSession = async () => {
       const { data, error } = await supabase.auth.getSession();
       if (error) {
-        console.error('Error fetching session:', error);
+        console.error("Error fetching session:", error);
         setIsLoadingSession(false);
         return;
       }
@@ -51,17 +50,17 @@ export default function LoginPage() {
 
       // If user is logged in, redirect to dashboard
       if (data.session) {
-        router.push('/dashboard');
+        router.push("/dashboard");
       }
     };
 
     fetchSession();
 
-    // Listen for auth state changes (e.g., after magic link click)
+    // Listen for auth state changes (simplified for password-based login)
     const { data: authListener } = supabase.auth.onAuthStateChange((event, newSession) => {
       setSession(newSession);
-      if (event === 'SIGNED_IN') {
-        router.push('/dashboard');
+      if (event === "SIGNED_IN") {
+        router.push("/dashboard");
       }
     });
 
@@ -72,75 +71,38 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      const { error } = await supabase.auth.signInWithOtp({
+      console.log("Starting login process with data:", data);
+
+      // Sign in with email and password
+      const { data: authData, error } = await supabase.auth.signInWithPassword({
         email: data.email,
-        options: {
-          emailRedirectTo: process.env.NEXT_PUBLIC_APP_URL
-            ? `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
-            : 'http://localhost:3000/dashboard',
-        },
+        password: data.password,
       });
 
       if (error) throw error;
+      console.log("Supabase Auth response:", authData);
 
+      // Check if user and session are returned
+      const { user, session } = authData;
+      if (!user || !session) {
+        throw new Error("Failed to retrieve user session after login");
+      }
+
+      // Success message and redirect (handled by useEffect listener)
       toast({
-        title: 'MAGIC LINK SENT!',
-        description: 'Check your email for a magic link to log in.',
+        title: "LOGIN SUCCESSFUL!",
+        description: `Welcome back, ${user.email}!`,
         duration: 5000,
       });
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to send magic link';
+      const errorMessage = err instanceof Error ? err.message : "Failed to log in";
       toast({
-        title: 'LOGIN ERROR',
+        title: "LOGIN ERROR",
         description: errorMessage,
-        variant: 'destructive',
+        variant: "destructive",
         duration: 5000,
       });
-      console.error('Login error:', err);
-    }
-  };
-
-  const resendMagicLink = async () => {
-    const email = getValues('email');
-    if (!email || !email.includes('@')) {
-      toast({
-        title: 'INVALID EMAIL',
-        description: 'Please enter a valid email address to resend the magic link.',
-        variant: 'destructive',
-        duration: 5000,
-      });
-      return;
-    }
-
-    setIsResending(true);
-    try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: process.env.NEXT_PUBLIC_APP_URL
-            ? `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
-            : 'http://localhost:3000/dashboard',
-        },
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: 'MAGIC LINK RESENT!',
-        description: 'Check your email for the new magic link.',
-        duration: 5000,
-      });
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to resend magic link';
-      toast({
-        title: 'RESEND ERROR',
-        description: errorMessage,
-        variant: 'destructive',
-        duration: 5000,
-      });
-      console.error('Resend error:', err);
-    } finally {
-      setIsResending(false);
+      console.error("Login error:", err);
     }
   };
 
@@ -170,19 +132,19 @@ export default function LoginPage() {
             </div>
             <h1 className="comic-heading text-4xl text-black mb-2">KINGDOM COMICS ADMIN</h1>
             <p className="text-sm text-muted-foreground">
-              Enter your email to access the admin panel
+              Enter your credentials to access the admin panel
             </p>
           </div>
 
           {isLoggedIn && (
             <div className="text-center mb-4">
               <p className="text-green-600">
-                You are already logged in as {session?.user.email}.{' '}
-                <Button variant="link" onClick={() => supabase.auth.signOut().then(() => router.push('/login'))}>
+                You are already logged in as {session?.user.email}.{" "}
+                <Button variant="link" onClick={() => supabase.auth.signOut().then(() => router.push("/login"))}>
                   Log out
                 </Button>
               </p>
-              <Button onClick={() => router.push('/loading-screen')}>Go to Admin Panel</Button>
+              <Button onClick={() => router.push("/loading-screen")}>Go to Admin Panel</Button>
             </div>
           )}
 
@@ -195,7 +157,7 @@ export default function LoginPage() {
                 <Input
                   id="email"
                   type="email"
-                  {...control.register('email')}
+                  {...register("email")}
                   className="border-2 border-black h-12"
                   placeholder="admin@comics.com"
                   required
@@ -205,26 +167,34 @@ export default function LoginPage() {
                 )}
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-lg">
+                  Password
+                </Label>
+                <Input
+                  id="password"
+                  type="password"
+                  {...register("password")}
+                  className="border-2 border-black h-12"
+                  placeholder="password"
+                  required
+                />
+                {errors.password && (
+                  <p className="text-destructive text-sm">{errors.password.message}</p>
+                )}
+              </div>
+
               <Button
                 type="submit"
                 className="comic-button w-full h-12 text-xl"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'SENDING MAGIC LINK...' : 'ACCESS ADMIN PANEL'}
-              </Button>
-
-              <Button
-                type="button"
-                onClick={resendMagicLink}
-                className="comic-button w-full h-12 text-xl"
-                disabled={isResending || isSubmitting}
-              >
-                {isResending ? 'RESENDING...' : 'RESEND MAGIC LINK'}
+                {isSubmitting ? "LOGGING IN..." : "ACCESS ADMIN PANEL"}
               </Button>
 
               <div className="text-center mt-4">
                 <p className="text-sm text-muted-foreground">
-                  Don't have an account?{' '}
+                  Don&apos;t have an account?{" "}
                   <Link href="/signup" className="text-primary font-medium hover:underline">
                     Sign up here
                   </Link>
