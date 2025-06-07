@@ -65,33 +65,36 @@ export const useStore = create<State>((set) => ({
       },
     
     fetchUser: async () => {
-        try {
-            const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
-            if (authError) throw new Error(`Failed to fetch auth user: ${authError.message}`);
-            if (!authUser) {
-                set({ user: null });
-                return;
-            }
-            const { data, error } = await supabase
-                .from('users')
-                .select('*')
-                .eq('id', authUser.id)
-                .single();
+       try {
+      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+      if (authError) throw new Error(`Auth error: ${authError.message}`);
+      if (!authUser) {
+        set({ user: null });
+        return;
+      }
+      console.log("Fetching user with ID:", authUser.id); // Debug log
+      const { data, error } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", authUser.id)
+        .single();
 
-            if (error) {
-                throw new Error(`Supabase error: ${error.message}, code: ${error.code}, details: ${error.details}`);
-            }
+      if (error) {
+        throw new Error(
+          `Supabase error: ${error.message}, code: ${error.code}, details: ${error.details || "none"}`
+        );
+      }
 
-            if (!data) {
-                throw new Error(`No user found in 'users' table for id: ${authUser.id}`);
-            }
+      if (!data) {
+        throw new Error(`No user found in 'users' table for id: ${authUser.id}`);
+      }
 
-            set({ user: data });
-        } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'Unknown error fetching user';
-            console.error('Error fetching user:', errorMessage);
-            set({ user: null });
-        }
+      set({ user: data });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Unknown error fetching user";
+      console.error("Error fetching user:", errorMessage);
+      set({ user: null });
+    }
     },
     clearBooks: () => set({ books: [], loading: false, error: null }),
 }));

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Plus, Edit, Calendar, BookOpen, Layers, Trash2 } from "lucide-react"
+import { Plus, Edit, Calendar, BookOpen, Layers, Trash2, Users } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/components/auth-provider"
 import { useRouter } from "next/navigation"
@@ -11,7 +11,6 @@ import { useStore } from "@/utils/store"
 import { supabase } from "@/lib/supabase"
 import { Book } from "@/types/types"
 import { useToast } from "@/hooks/use-toast"
-
 
 export default function Dashboard() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
@@ -208,6 +207,14 @@ export default function Dashboard() {
               <span>ADD COMIC</span>
             </Button>
           </Link>
+          {user?.role === 'admin' && (
+            <Link href="/dashboard/users">
+              <Button className="comic-button gap-2">
+                <Users className="h-5 w-5" />
+                <span>MANAGE USERS</span>
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
 
@@ -282,11 +289,6 @@ export default function Dashboard() {
                                 </span>
                               </div>
                               <div className="flex gap-2">
-                                {/* <Link href={`/dashboard/edit/${issue.id}`}>
-                                  <Button size="sm" variant="outline" className="comic-button">
-                                    Edit
-                                  </Button>
-                                </Link> */}
                                 {user?.role === 'admin' && (
                                   <Button
                                     size="sm"
@@ -395,11 +397,6 @@ export default function Dashboard() {
                                 </span>
                               </div>
                               <div className="flex gap-2">
-                                {/* <Link href={`/dashboard/edit/${issue.id}`}>
-                                  <Button size="sm" variant="outline" className="comic-button">
-                                    Edit
-                                  </Button>
-                                </Link> */}
                                 {user?.role === 'admin' && (
                                   <Button
                                     size="sm"

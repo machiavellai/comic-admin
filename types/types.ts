@@ -27,4 +27,7 @@ export interface User {
     email: string;
     role: string;
     subscribed?: boolean;
+    created_at?: string;
+
 }
+
