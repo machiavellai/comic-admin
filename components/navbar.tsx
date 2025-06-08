@@ -24,7 +24,7 @@ export function Navbar() {
 
   return (
     <header className="border-b border-border">
-      <div className="container flex h-16 items-center justify-between">
+      <div className="container flex h-16 sm:h-16 items-center justify-between">
         <Link href="/dashboard" className="flex items-center gap-2">
           <Image src="/kingdom-logo.png" alt="Kingdom Comics" width={32} height={32} />
           <span className="comic-heading text-2xl">COMIC ADMIN</span>
