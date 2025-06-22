@@ -318,6 +318,7 @@ export default function Dashboard() {
                   <Link href={`/dashboard/add?parent_id=${book.id}`} className="flex-shrink-0">
                     <Button variant="default" className="comic-button">
                       <Plus className="h-4 w-4" />
+                      ADD ISSUE
                     </Button>
                   </Link>
                 </div>
